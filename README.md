@@ -3,8 +3,7 @@
 
 	
   
-  STEP 1:	Remove Builtin drivers
-			Remove the inbuilt drivers for USB devices, by blacklisting them or by removing them manually:
+  STEP 1:Remove the inbuilt drivers for USB devices, by blacklisting them or by removing them manually:
 				Blacklisting process:
 						Place the following text in:
 						# Blacklisting inbuilt USB drivers
