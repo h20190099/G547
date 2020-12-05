@@ -1,4 +1,9 @@
 import boto3
+import array
+
+sorted_a = array.array('f', [0.0,0.0,0.0,0.0,0.0,0.0])
+
+
 
 def lambda_handler(event, context):
     client = boto3.client('dynamodb')
@@ -19,6 +24,31 @@ def lambda_handler(event, context):
     
     
     bus = event['Bus registration number']
+    total = event['Total stops in scheduled route:']
+    bus_stop = event['Bus stop']
+    total_pass = event['Total passenger count ']
+    avg_time = event['Route average time']
+    route_no =int( event['Route number'])
+    
+    if total == bus_stop:
+        passen = float(total_pass)
+        time = float(avg_time)
+        sorted_a[route_no-1] = (0.6*passen) + (0.4*time)
+    print(sorted_a)
+    print(route_no)
+    after_sort=sorted(sorted_a)
+    print("sort_arr :",after_sort)
+    weight_max = after_sort[5]
+    
+    exists = 0.0 in sorted_a
+    
+    if exists:
+        print("Route on which bus to be scheduled :",sorted_a.index(0.0)+1)
+        
+    else:
+        print("Route with max. weight: ",weight_max)
+        print("Route on which bus to be scheduled :",sorted_a.index(weight_max)+1)
+     
     
     if bus == '201':
         
