@@ -1,5 +1,6 @@
 # importing libraries
 import boto3
+from csv import reader
 import sys
 import paho.mqtt.client as paho
 import ssl
@@ -9,21 +10,35 @@ import json
 from datetime import datetime
 import random
 from array import *
-import time 
+import time
+
 global check
-
-
 global county
-RFID = [1,2,3,4,5,6,7,8,9,10]             #registered valid RFID card numbers
-bus = [201,202,203,204,205,206]           #Bus numbers
-new=[]                                    #will contain valid RFID card holders present in the bus
+global n
+global sec
+
+
+
+#RFID = [1,2,3,4,5,6,7,8,9,10]             #registered valid RFID card numbers
+bus = [201,202,203,204]                    #Bus numbers
+#new=[]                                    #will contain valid RFID card holders present in the bus
+route1 =[]
+route2 =[]
+route3 =[]
+route4 =[]
+route5 =[]
+route6 =[]
+route=[]
+latitude=[]
+longitude=[]
+stops =[]
 
 max_count=10                              #maximum bus capacity
 opt_count=5                               #optimum bus capacity
-county = 0
-exe = 0
+#county = 0
+#exe = 0
 
-bus_number = random.choice(bus)
+
 
  
 connflag = False
@@ -64,7 +79,63 @@ mqttc.loop_start()                                          # Start the loop
 while 1:
     sleep(5)
     if connflag == True:
+        with open('rp_add.csv', 'r') as read_obj:
+            csv_reader = reader(read_obj)
         
+            # Pass reader object to list() to get a list of lists
+            list_of_rows = list(csv_reader)
+            
+            for element in list_of_rows[1]:
+                if element != '':
+                    route1.append(element)
+            for element in list_of_rows[2]:
+                if element != '':
+                    route2.append(element)
+            for element in list_of_rows[3]:
+                if element != '':
+                    route3.append(element)
+            for element in list_of_rows[4]:
+                if element != '':
+                    route4.append(element)
+            for element in list_of_rows[5]:
+                if element != '':
+                    route5.append(element)
+            for element in list_of_rows[6]:
+                if element != '':
+                    route6.append(element)        
+
+
+
+
+
+                    
+            print (route1)
+            print(len(route1)-1)
+            print (route2)
+            print(len(route2)-1)
+            print (route3)
+            print(len(route3)-1)
+            print (route4)
+            print(len(route4)-1)
+            print (route5)
+            print(len(route5)-1)
+            print (route6)
+            print(len(route6)-1)
+            route.append(route1[0])
+            route.append(route2[0])
+            route.append(route3[0])
+            route.append(route4[0])
+            route.append(route5[0])
+            route.append(route6[0])
+            print (route)
+            stops.append(len(route1)-1)
+            stops.append(len(route2)-1)
+            stops.append(len(route3)-1)
+            stops.append(len(route4)-1)
+            stops.append(len(route5)-1)
+            stops.append(len(route6)-1)
+            print (stops)
+            
         key ='lCjtPeawYr7eGGxB5g1qTclW9lCHaTfC'
         url ='http://www.mapquestapi.com/geocoding/v1/address?key='
         loc1 = 'Navy Nagar Colaba'
@@ -136,152 +207,115 @@ while 1:
         lat8 = location8['latLng']['lat']
         lon8 = location8['latLng']['lng']
 
+        latitude.append(lat1)
+        latitude.append(lat2)
+        latitude.append(lat3)
+        latitude.append(lat4)
+        latitude.append(lat5)
+        latitude.append(lat6)
+        latitude.append(lat7)
+        latitude.append(lat8)
+        print (latitude)
+
+        longitude.append(lon1)
+        longitude.append(lon2)
+        longitude.append(lon3)
+        longitude.append(lon4)
+        longitude.append(lon5)
+        longitude.append(lon6)
+        longitude.append(lon7)
+        longitude.append(lon8)
+        print (longitude)
+
 
         # define the countdown func. 
-        def countdown(t):
+        def countdown(t,n,sec):
             
             print('Bus registration number', str(sys.argv[1]))
-            print('latitude :',lat)
-            print('longitude :',lon)
-            print('Number of passenger:',county-exe)
             
-            if county-exe > opt_count and county-exe < max_count:
-                print(" Bus is over loaded")
-            elif county-exe < opt_count:
-                print("Bus is under loaded")
-            elif county-exe == opt_count:
-                print("Bus is balancely loaded")
+            route_max = len(route)
+            Total_pass = 0
+            
+            print('Maximum routes for scheduled journey :', route_max)
+            for i in range(1, n+1):
                 
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-            print("current_time =", current_time)
-            
-            
-            message1 = '{"current_time":'+'"'+str(current_time)+'","Bus registration number":'+'"'+str(sys.argv[1])+'","Route number":'+'"'+str(sys.argv[2])+'","latitude":'+'"'+str(lat)+'","longitude":'+'"'+str(lon)+'",'+'"Number of passenger":'+str(county-exe)+'}'
-            mqttc.publish("commontestTopic", message1, 1)
-            
-            while t:
-                count=0
-                mins, secs = divmod(t, 60) 
-                timer = '{:02d}:{:02d}'.format(mins, secs) 
-               # print(timer, end="\r") 
-                time.sleep(1) 
-                t -= 1
+                if i != n:
+                    pas_count = random.randint(1,10)
+                else:
+                    pas_count = 0 
+
+                Total_pass = Total_pass + pas_count
+                lat=latitude[i-1]
+                lon=longitude[i-1]
+                    
+                now = datetime.now()
+                current_time = now.strftime("%H:%M:%S")
+
+                if i == 1:
+                    start_count = current_time
+                    end_count = start_count
+                   
+                elif i>1 :
+                    end_count = current_time
+                    
+                     
                 
-
-
-
-        def entry():
-            global county 
-            pas_id = random.randint(1,13)
-            
-            if pas_id in RFID:
-                RFID.remove(pas_id)
-                print('entered id:',pas_id)
-                print('Yet to entered :',RFID)
-                county +=1
-                new.append(pas_id)
-
-                print('Inside the bus:',new)
-                print('\n')
-
-            
+                print('At Bustop :',i)
+                print('latitude :',lat)
+                print('longitude :',lon)
+                print('Number of passenger:',pas_count)
+                print('Total passenger count :',Total_pass)
+                print("current_time =", current_time)
                 
-        def leave():
-            global exe
-            exit_id= random.choice(new)
-            RFID.append(exit_id)
-            new.remove(exit_id)
-
-            print('Yet to entered :',RFID)
-            print('Inside the bus:',new)
-            exe +=1
-            print('\n')
+                while t:
+                    count=0
+                    mins, secs = divmod(t, 60)
+                    timer = '{:02d}:{:02d}'.format(mins, secs)
+                    print(timer, end="\r")
+                    time.sleep(1)
+                    t -= 1
+                    
+                FMT = '%H:%M:%S'    
+                diff=datetime.strptime(end_count, FMT) - datetime.strptime(start_count, FMT)
+                sec = diff.total_seconds()
+               
+                print('\nRoute time :',sec)
                 
-        # function call
-        print('Route scheduled:', str(sys.argv[2]))
-        print('At Bustop 1!!')
-
                 
-        entry()
-        entry()
-        entry()
-        entry()
-        entry()
-        entry()
-        entry()
-        leave()
-        leave()
+                if pas_count > opt_count and pas_count < max_count:
+                    print(" Bus is over loaded")
+                elif pas_count < opt_count and  pas_count >0 :
+                    print("Bus is under loaded")
+                elif pas_count == opt_count:
+                    print("Bus is balancely loaded")
+                elif pas_count == 0:
+                    print('\nBus ready for rescheduling!!')
+                    
+                
+                    
+                message1 = '{"current_time":'+'"'+str(current_time)+'","Total stops in scheduled route:":'+'"'+str(n)+'","Bus registration number":'+'"'+str(sys.argv[1])+'","route_max":'+'"'+str(route_max)+'","Bus stop":'+'"'+str(i)+'","Route average time":'+'"'+str(sec)+'","Route number":'+'"'+str(sys.argv[2])+'","latitude":'+'"'+str(lat)+'","longitude":'+'"'+str(lon)+'","Total passenger count ":'+'"'+str(Total_pass)+'",'+'"Number of passenger":'+str(pas_count)+'}'
+                mqttc.publish("commontestTopic", message1, 1)
 
-
-        lat=lat1
-        lon=lon1
-            
-        countdown(int(10))
-      
-        ###########################################
-        print('\nAt Bustop 2!!')
-        
-        entry()
-        entry()
-        entry()
-        entry()
-        leave()
-        leave()
-
-
-
-        if str(sys.argv[2])=='1':
-            lat=lat2
-            lon=lon2
-        elif str(sys.argv[2])=='2':
-            lat=lat3
-            lon=lon3
-        else:
-            lat=lat4
-            lon=lon4
-           
-        countdown(int(25))
-        
-        ###############################################
-        print('\nAt Bustop 3!!')
-
-        
-        entry()
-        entry()
-        leave()
-
-
-        if str(sys.argv[2])=='1':
-            lat=lat5
-            lon=lon5
-        elif str(sys.argv[2])=='2':
-            lat=lat6
-            lon=lon6
-        else:
-            lat=lat7
-            lon=lon7
-            
-        countdown(int(15))
-        
+                t=random.randint(10,25)
+                print('\n\n')
+                        
     
-        ######################################################
-        print('\nAt Bustop 4!!')
-
-        while len(new) > 0:
-            leave()
-            #print('empty')
-            
-           
-
-        lat=lat8
-        lon=lon8
-        
-        countdown(int(1))
-        
-        print('\nBus ready for rescheduling!!')
+ 
+        # function call
+       
+        length = len(route)
+        for j in range( 0,length):
+            if str(sys.argv[2])== str(route[j]):
+                print('\n\nRoute scheduled:',j+1)
+                print('Total stops in scheduled route:',stops[j])
+                countdown(int(10),stops[j],0)
+               
+        if str(sys.argv[2])> str(length):
+            print('\nRoute does not exist!!')    
+        break;  
+       
         ##########################################################
 
-         # Print sent temperature msg on console
+        
     else:
         print("waiting for connection...")                   
