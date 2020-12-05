@@ -1,8 +1,8 @@
 import boto3
 import array
 
-sorted_a = array.array('f', [0.0,0.0,0.0,0.0,0.0,0.0])
-
+max_route=4                                            #Change variable value whenever implementing for different prefixed routes
+sorted_a = array.array('f', [0.0]*max_route)
 
 
 def lambda_handler(event, context):
@@ -33,12 +33,13 @@ def lambda_handler(event, context):
     if total == bus_stop:
         passen = float(total_pass)
         time = float(avg_time)
-        sorted_a[route_no-1] = (0.6*passen) + (0.4*time)
-    print(sorted_a)
-    print(route_no)
+        sorted_a[route_no - 1] = (0.6*passen) + (0.4*time)
+        
+    print("Weight of the routes : ",sorted_a)
+    print("Currently scheduled route :",route_no)
     after_sort=sorted(sorted_a)
     print("sort_arr :",after_sort)
-    weight_max = after_sort[5]
+    weight_max = after_sort[max_route-1]
     
     exists = 0.0 in sorted_a
     
